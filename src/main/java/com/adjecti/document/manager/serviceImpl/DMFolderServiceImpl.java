@@ -28,6 +28,7 @@ public class DMFolderServiceImpl implements DMFolderService {
 	@Override
 	public DMFolder create(DMFolder folder, String path) {
 		// TODO Auto-generated method stub
+		System.out.println("create    "+ folder);
 		String fullpath = path + folder.getName();
 		File file = new File(fullpath);
 		System.out.println(fullpath + " checking...");
@@ -37,8 +38,13 @@ public class DMFolderServiceImpl implements DMFolderService {
 	        System.out.println("Directory is created");
 	       // DMFolder dm = new DMFolder();
 	        
-	        folder.setSystemPath(fullpath);
 	        folder.setCreatedDate(new Date());
+	        if(folder.getParentId() != 0) {
+	        	folder.setSystemPath(path +folder.getParentId()+"/"+ folder.getName());
+	        }else {
+	        	
+	        	folder.setSystemPath(fullpath);
+	        }
 	        System.out.println(folder);
 	        folderRepo.save(folder);
 	        
@@ -96,9 +102,11 @@ public class DMFolderServiceImpl implements DMFolderService {
 
 	@Override
 	public DMFolder createParentFolder(DMFolder dmFolder, String path) {
+		System.out.println("dm folder       i   "+dmFolder);
+		
 	    String parentPath = path + dmFolder.getParentId();
 	    File parentFolder = new File(parentPath);
-	    System.out.println(parentPath + " checking...");
+	    System.out.println(parentPath + " checking.......");
 	    
 	    if (!parentFolder.exists()) {
 	        parentFolder.mkdir();
@@ -129,15 +137,17 @@ public class DMFolderServiceImpl implements DMFolderService {
 		}
 
 		String folderPath = folder.getSystemPath();
+		System.out.println(folderPath);
 		File folderFile = new File(folderPath);
+		System.out.println(folderFile);
 		if (!folderFile.exists() || !folderFile.isDirectory()) {
 			return null;
 		}
 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				ZipOutputStream zos = new ZipOutputStream(baos)) {
-System.out.println(zos + "zzzzz");
-System.out.println(baos + "baos");
+//System.out.println(zos + "zzzzz");
+//System.out.println(baos + "baos");
 			addFilesToZip(folderFile, folderFile.getName(), zos);
 
 			zos.finish();
@@ -151,23 +161,30 @@ System.out.println(baos + "baos");
 	}
 	
 	private void addFilesToZip(File folder, String parentFolderPath, ZipOutputStream zos) throws IOException {
-		File[] files = folder.listFiles();
-		System.out.println(files + "listsssss");
-		if (files != null) {
-			for (File file : files) {
-				if (file.isDirectory()) {
-					addFilesToZip(file, parentFolderPath + "/" + file.getName(), zos);
-				} else {
-					Path filePath = file.toPath();
-					String entryPath = parentFolderPath + "/" + filePath.getFileName().toString();
-					System.out.println(entryPath);
-					ZipEntry entry = new ZipEntry(entryPath);
-					zos.putNextEntry(entry);
-					zos.write(Files.readAllBytes(filePath));
-					zos.closeEntry();
-				}
-			}
-		}
+	    File[] files = folder.listFiles();
+	    System.out.println(files + "listsssss");
+	    if (files != null) {
+	        for (File file : files) {
+	            if (file.isDirectory()) {
+	                String entryPath = parentFolderPath + "/" + file.getName();
+	                System.out.println(entryPath + "entry path");
+	                ZipEntry entry = new ZipEntry(entryPath);
+	                System.out.println( entry + "entry");
+	                zos.putNextEntry(entry);
+	                zos.closeEntry();
+	                addFilesToZip(file, entryPath, zos); 
+	            } else {
+	                Path filePath = file.toPath();
+	                System.out.println(filePath + "fppppp");
+	                String entryPath = parentFolderPath + "/" + file.getName();
+	                System.out.println(entryPath);
+	                ZipEntry entry = new ZipEntry(entryPath);
+	                zos.putNextEntry(entry);
+	                zos.write(Files.readAllBytes(filePath));
+	                zos.closeEntry();
+	            }
+	        }
+	    }
 	}
 
 }
