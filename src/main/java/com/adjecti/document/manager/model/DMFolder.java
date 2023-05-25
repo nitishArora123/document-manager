@@ -21,7 +21,7 @@ public class DMFolder {
 	private String name;
 
 	@OneToMany(cascade = CascadeType.ALL)
-	@JoinColumn(name = "parent_id")
+	@JoinColumn(name = "file_id")
 	private List<DMFile> dmFile;
 
 	private Date createdDate;
@@ -89,7 +89,7 @@ public class DMFolder {
 		super();
 		this.id = id;
 		this.name = name;
-		//this.dmFile = dmFile;
+		this.dmFile = dmFile;
 		this.createdDate = createdDate;
 		this.updatedDate = updatedDate;
 		this.parentId = parentId;
@@ -101,5 +101,12 @@ public class DMFolder {
 		super();
 		// TODO Auto-generated constructor stub
 	}
+	@Override
+	public String toString() {
+		return "DMFolder [id=" + id + ", name=" + name + ", dmFile=" + dmFile + ", createdDate=" + createdDate
+				+ ", updatedDate=" + updatedDate + ", parentId=" + parentId + ", createdBy=" + createdBy
+				+ ", updatedBy=" + updatedBy + ", systemPath=" + systemPath + "]";
+	}
 
+	
 }

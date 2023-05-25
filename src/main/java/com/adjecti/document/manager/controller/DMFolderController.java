@@ -1,5 +1,10 @@
 package com.adjecti.document.manager.controller;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URLConnection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,15 +15,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.adjecti.document.manager.model.DMFile;
 import com.adjecti.document.manager.model.DMFolder;
 import com.adjecti.document.manager.service.DMFolderService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @CrossOrigin("*")
 @RequestMapping("api/v1/folder")
@@ -35,7 +47,7 @@ public class DMFolderController {
 	@PostMapping
 	public DMFolder create(@RequestBody DMFolder folder) {
 		System.out.println("create");
-	    return folderService.create(folder);
+	    return folderService.create(folder, path);
 	}
 	 
 	@DeleteMapping("{id}")
@@ -56,13 +68,13 @@ public class DMFolderController {
 	@PutMapping("{id}")
     public DMFolder update(@PathVariable("id") long id,@RequestBody DMFolder folder) {
 		System.out.println("update");
-		return folderService.update(id,folder);
+		return folderService.update(id,folder, path);
 	}
-	
+
 	@PostMapping("/test")
 	public DMFolder createFolder(@RequestBody DMFolder folder) {
 		System.out.println("create folder"); 
-		folderService.create( folder);
+		folderService.create( folder, path);
 	    return folder;
 	}
 
@@ -93,7 +105,6 @@ public class DMFolderController {
 	    headers.setContentDispositionFormData("attachment", fileName);
 
 	    return ResponseEntity.ok().headers(headers).body(folderData);
+
 	}
-	
-	
 }

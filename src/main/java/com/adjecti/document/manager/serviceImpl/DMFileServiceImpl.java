@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.adjecti.document.manager.model.DMFile;
 import com.adjecti.document.manager.model.DMFileType;
+import com.adjecti.document.manager.model.DMFolder;
 import com.adjecti.document.manager.repository.DMFileRepository;
 import com.adjecti.document.manager.repository.DMFileTypeRepository;
 import com.adjecti.document.manager.service.DMFileService;
@@ -36,6 +37,10 @@ public class DMFileServiceImpl implements DMFileService {
 	public DMFile upload(String path, MultipartFile file) throws IOException {
 		try {
 			String fileName = file.getOriginalFilename();
+			/*
+			 * DMFolder dmf = new DMFolder() dmf.getDmFile().get(0).get
+			 */
+			System.out.println(fileName + "full file name");
 			String fullPath = path + "/" + fileName;
 			System.out.println(fullPath + "pathhhh");
 			File f = new File(path);
@@ -70,16 +75,20 @@ public class DMFileServiceImpl implements DMFileService {
 
 	@Override
 	public DMFile update(DMFile document, long id) {
-		Optional<DMFile> existingDocumentOptional = docRepo.findById(id);
-		if (!existingDocumentOptional.isPresent()) {
-			throw new RuntimeException("Document not found");
-		}
-		DMFile existingDocument = existingDocumentOptional.get();
-
-		existingDocument.setName(document.getName());
-		existingDocument.setDescription(document.getDescription());
-		existingDocument.setCreatedDate(new Date());
-		return docRepo.save(existingDocument);
+	    Optional<DMFile> existingDocumentOptional = docRepo.findById(id);
+	    if (!existingDocumentOptional.isPresent()) {
+	        throw new RuntimeException("Document not found");
+	    }
+	    DMFile existingDocument = existingDocumentOptional.get();
+	    System.out.println(existingDocument);
+	    String originalFileName = existingDocument.getSystemPath();
+	    String fileName = originalFileName.substring(originalFileName.lastIndexOf('/') + 1);
+	    existingDocument.setName(fileName);
+	    
+	    existingDocument.setDescription(document.getDescription());
+	    existingDocument.setCreatedDate(new Date());
+	    
+	    return docRepo.save(existingDocument);
 	}
 
 	@Override
@@ -104,7 +113,6 @@ public class DMFileServiceImpl implements DMFileService {
 			DMFile documentManager = new DMFile();
 			DMFileType docType = new DMFileType();
 			documentManager.setName(newFileName);
-			;
 			documentManager.setCreatedDate(new Date());
 			docType.setDmFileType(docType.getDmFileType());
 			documentManager.setDescription(documentManager.getDescription());
@@ -168,6 +176,14 @@ public class DMFileServiceImpl implements DMFileService {
 		}
 
 		return uploadedDocuments;
+	}
+
+	@Override
+	public byte[] downloadDocument(String fileName) throws IOException {
+		Optional<DMFile> fileObject = docRepo.findByName(fileName);
+		String fullPath = fileObject.get().getSystemPath();
+		System.out.println(fullPath + "fpath");
+		return Files.readAllBytes(new File(fullPath).toPath());
 	}
 
 }

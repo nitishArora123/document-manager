@@ -26,18 +26,18 @@ public class DMFolderServiceImpl implements DMFolderService {
 	private DMFolderRepository folderRepo;
 
 	@Override
-	public DMFolder create(DMFolder folder) {
+	public DMFolder create(DMFolder folder, String path) {
 		// TODO Auto-generated method stub
-		String path = "E:/resumes/" + folder.getName();
-		File file = new File(path);
-		System.out.println(path + " checking...");
+		String fullpath = path + folder.getName();
+		File file = new File(fullpath);
+		System.out.println(fullpath + " checking...");
 	    
 	    if (!file.exists()) {
 	    	file.mkdir();	
 	        System.out.println("Directory is created");
 	       // DMFolder dm = new DMFolder();
 	        
-	        folder.setSystemPath(path);
+	        folder.setSystemPath(fullpath);
 	        folder.setCreatedDate(new Date());
 	        System.out.println(folder);
 	        folderRepo.save(folder);
@@ -55,15 +55,15 @@ public class DMFolderServiceImpl implements DMFolderService {
 	}
 
 	@Override
-	public DMFolder update( long id,DMFolder folder) {
+	public DMFolder update( long id,DMFolder folder,String path) {
 		DMFolder fold = folderRepo.findById(id).orElse(null);
 		if (fold != null) {
-			String path = "E:/resumes/" + folder.getName();
-			File file=new File(path);
+			String fullpath = path + folder.getName();
+			File file=new File(fullpath);
 			file.renameTo(file);	
 			fold.setName(folder.getName());
 			fold.setCreatedDate(folder.getCreatedDate());
-			fold.setSystemPath(path);
+			fold.setSystemPath(fullpath);
 			fold.setUpdatedDate(new Date());
 			fold = folderRepo.save(fold);
 			System.out.println(fold.getUpdatedDate());
@@ -75,7 +75,7 @@ public class DMFolderServiceImpl implements DMFolderService {
 	@Override
 	public List<DMFolder> getAll() {
 		// TODO Auto-generated method stub
-		return folderRepo.findAll();
+		return folderRepo.getAll();
 	}
 
 	@Override
@@ -95,8 +95,8 @@ public class DMFolderServiceImpl implements DMFolderService {
 	}
 
 	@Override
-	public DMFolder createParentFolder(DMFolder dmFolder) {
-	    String parentPath = "E:/resumes/" + dmFolder.getParentId();
+	public DMFolder createParentFolder(DMFolder dmFolder, String path) {
+	    String parentPath = path + dmFolder.getParentId();
 	    File parentFolder = new File(parentPath);
 	    System.out.println(parentPath + " checking...");
 	    
@@ -105,9 +105,9 @@ public class DMFolderServiceImpl implements DMFolderService {
 	        System.out.println("Parent directory is created");
 	    }
 	    
-	    String path = parentPath + "/" + dmFolder.getName();
-	    File file = new File(path);
-	    System.out.println(path + " checking...");
+	    String path2 = parentPath + "/" + dmFolder.getName();
+	    File file = new File(path2);
+	    System.out.println(path2 + " checking...");
 	    
 	    if (!file.exists()) {
 	        file.mkdir();
@@ -136,7 +136,8 @@ public class DMFolderServiceImpl implements DMFolderService {
 
 		try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				ZipOutputStream zos = new ZipOutputStream(baos)) {
-
+System.out.println(zos + "zzzzz");
+System.out.println(baos + "baos");
 			addFilesToZip(folderFile, folderFile.getName(), zos);
 
 			zos.finish();

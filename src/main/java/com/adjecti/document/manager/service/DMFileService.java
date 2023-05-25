@@ -28,8 +28,8 @@ public interface DMFileService {
 
 	DMFile create(Map<Object, Object> docManager) throws ClassNotFoundException;
 
-	 public List<DMFile> uploadFilesInFolder(String folderPath, List<MultipartFile> files) throws IOException;
+	public List<DMFile> uploadFilesInFolder(String folderPath, List<MultipartFile> files) throws IOException;
 	 
-//	 public byte[] downloadDocument(String fileName) throws IOException;
+	public byte[] downloadDocument(String fileName) throws IOException;
 	
 }

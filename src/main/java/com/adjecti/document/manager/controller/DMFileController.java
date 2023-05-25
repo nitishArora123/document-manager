@@ -1,4 +1,5 @@
 package com.adjecti.document.manager.controller;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -34,83 +35,76 @@ public class DMFileController {
 
 	@Autowired
 	private DMFileService fileService;
-	
+
 	@Value("${file.upload-dir}")
 	private String path;
-	
 
 	@PostMapping("/upload-multiple")
-	public ResponseEntity<List<DMFile>> uploadMultipleDocuments(@RequestParam("documentImage") MultipartFile[] files) throws IOException {
-	    List<DMFile> uploadedDocuments = fileService.uploadMultiple(path, files);
-	    return new ResponseEntity<>(uploadedDocuments, HttpStatus.OK);
+	public ResponseEntity<List<DMFile>> uploadMultipleDocuments(@RequestParam("documentImage") MultipartFile[] files)
+			throws IOException {
+		List<DMFile> uploadedDocuments = fileService.uploadMultiple(path, files);
+		return new ResponseEntity<>(uploadedDocuments, HttpStatus.OK);
 	}
 
-	
 	@PostMapping("/upload")
-	public ResponseEntity<DMFile> uploadDocument(@RequestParam("documentImage") MultipartFile file) throws IOException{
-		System.out.println("in controller"+file);
-		return new ResponseEntity<DMFile>(fileService.upload(path,file), HttpStatus.OK);
+	public ResponseEntity<DMFile> uploadDocument(@RequestParam("documentImage") MultipartFile file) throws IOException {
+		System.out.println("in controller" + file);
+		return new ResponseEntity<DMFile>(fileService.upload(path, file), HttpStatus.OK);
 	}
-	
+
 	@PostMapping
-	public ResponseEntity<DMFile>create(@RequestBody Map<Object, Object> documentManager)throws ClassNotFoundException{
-		
+	public ResponseEntity<DMFile> create(@RequestBody Map<Object, Object> documentManager)
+			throws ClassNotFoundException {
+
 //		DocumentManager docM=new DocumentManager();
-		
+
 //		ObjectMapper objMap=new ObjectMapper();
 //		
 //		DocumentManager docM=objMap.convertValue(documentManager,DocumentManager.class);
-		
+
 		System.out.println(documentManager);
-		return new ResponseEntity<DMFile>(fileService.create(documentManager),HttpStatus.OK);
+		return new ResponseEntity<DMFile>(fileService.create(documentManager), HttpStatus.OK);
 //		return null;		
 	}
-	
+
 	@PostMapping("/uploadInFolder")
-    public ResponseEntity<List<DMFile>> uploadFilesInFolder(
-            @RequestParam("folderPath") String folderPath,
-            @RequestParam("files") List<MultipartFile> files
-    ) {
-        try {
-            List<DMFile> uploadedFiles = fileService.uploadFilesInFolder(folderPath, files);
-            return ResponseEntity.ok(uploadedFiles);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+	public ResponseEntity<List<DMFile>> uploadFilesInFolder(@RequestParam("folderPath") String folderPath,
+			@RequestParam("files") List<MultipartFile> files) {
+		try {
+			List<DMFile> uploadedFiles = fileService.uploadFilesInFolder(folderPath, files);
+			return ResponseEntity.ok(uploadedFiles);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
 
-	
-	/*
-	 * @GetMapping("/download/{documentName}") public
-	 * ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String
-	 * documentName) throws IOException { byte[] fileBytes =
-	 * fileService.downloadDocument(documentName); ByteArrayResource resource = new
-	 * ByteArrayResource(fileBytes); return ResponseEntity.ok()
-	 * .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" +
-	 * documentName) .contentType(MediaType.APPLICATION_OCTET_STREAM)
-	 * .body(resource); }
-	 */
+	@GetMapping("/download/{documentName}")
+	public ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String documentName) throws IOException {
+		byte[] fileBytes = fileService.downloadDocument(documentName);
+		System.out.println("file download --->"+fileBytes);
+		ByteArrayResource resource = new ByteArrayResource(fileBytes);
+		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + documentName)
+				.contentType(MediaType.APPLICATION_OCTET_STREAM).body(resource);
+	}
 
-	
 	@GetMapping
-	public List<DMFile> getAll(){
+	public List<DMFile> getAll() {
 		return fileService.getAll();
 	}
-	
+
 	@GetMapping("{id}")
-	public Optional<DMFile> getById(@PathVariable ("id") long id) {
+	public Optional<DMFile> getById(@PathVariable("id") long id) {
 		return fileService.getById(id);
 	}
-	
+
 	@DeleteMapping("{id}")
 	public void delete(@PathVariable("id") long id) {
 		fileService.delete(id);
 	}
-	
+
 	@PutMapping("{id}")
-    public DMFile update(@PathVariable("id") long id ,@RequestBody DMFile docManager) {
+	public DMFile update(@PathVariable("id") long id, @RequestBody DMFile docManager) {
 		return fileService.update(docManager, id);
 	}
 }
-

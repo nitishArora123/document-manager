@@ -13,6 +13,10 @@ public interface DMFolderRepository extends JpaRepository<DMFolder, Long>{
 	@Query(nativeQuery = true, 
 	value = "select * from dmfolder where  parent_id  = ?") 
 	List<DMFolder> getByParentId(@Param("parentId") long parentId);
+	
+	@Query(nativeQuery = true, 
+	value = "select * from dmfolder where  parent_id  = 0")
+	List<DMFolder> getAll();
 }
 	 
 
