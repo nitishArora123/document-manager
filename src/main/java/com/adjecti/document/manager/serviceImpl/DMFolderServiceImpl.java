@@ -29,26 +29,29 @@ public class DMFolderServiceImpl implements DMFolderService {
 	public DMFolder create(DMFolder folder, String path) {
 		// TODO Auto-generated method stub
 		System.out.println("create    "+ folder);
-		String fullpath = path + folder.getName();
+	
+	
+		String fullpath;
+		if(folder.getParentId() != 0) {
+			DMFolder parentFolder = getById(folder.getParentId());
+			System.out.println(parentFolder);
+			fullpath = parentFolder.getSystemPath()+"/"+ folder.getName();
+		}else{
+			
+			fullpath = path + folder.getName();
+		}
+		
 		File file = new File(fullpath);
 		System.out.println(fullpath + " checking...");
 	    
 	    if (!file.exists()) {
+	    	
 	    	file.mkdir();	
 	        System.out.println("Directory is created");
-	       // DMFolder dm = new DMFolder();
-	        
 	        folder.setCreatedDate(new Date());
-	        if(folder.getParentId() != 0) {
-	        	folder.setSystemPath(path +folder.getParentId()+"/"+ folder.getName());
-	        }else {
-	        	
-	        	folder.setSystemPath(fullpath);
-	        }
+			folder.setSystemPath(fullpath);
 	        System.out.println(folder);
 	        folderRepo.save(folder);
-	        
-	  //      return true;
 	    }
 		return folderRepo.save(folder);
 	}
