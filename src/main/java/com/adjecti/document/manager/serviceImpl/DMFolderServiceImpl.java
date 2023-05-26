@@ -107,34 +107,27 @@ public class DMFolderServiceImpl implements DMFolderService {
 		return list;
 	}
 
-	@Override
-	public DMFolder createParentFolder(DMFolder dmFolder, String path) {
-		System.out.println("dm folder       i   "+dmFolder);
-		
-	    String parentPath = path + dmFolder.getParentId();
-	    File parentFolder = new File(parentPath);
-	    System.out.println(parentPath + " checking.......");
-	    
-	    if (!parentFolder.exists()) {
-	        parentFolder.mkdir();
-	        System.out.println("Parent directory is created");
-	    }
-	    
-	    String path2 = parentPath + "/" + dmFolder.getName();
-	    File file = new File(path2);
-	    System.out.println(path2 + " checking...");
-	    
-	    if (!file.exists()) {
-	        file.mkdir();
-	        System.out.println("Directory is created");
-	    }
-	    
-	    dmFolder.setSystemPath(path);
-	    dmFolder.setCreatedDate(new Date());
-	    System.out.println(dmFolder);
-	    
-	    return folderRepo.save(dmFolder);
-	}
+	/*
+	 * @Override public DMFolder createParentFolder(DMFolder dmFolder, String path)
+	 * { System.out.println("dm folder       i   "+dmFolder);
+	 * 
+	 * String parentPath = path + dmFolder.getParentId(); File parentFolder = new
+	 * File(parentPath); System.out.println(parentPath + " checking.......");
+	 * 
+	 * if (!parentFolder.exists()) { parentFolder.mkdir();
+	 * System.out.println("Parent directory is created"); }
+	 * 
+	 * String path2 = parentPath + "/" + dmFolder.getName(); File file = new
+	 * File(path2); System.out.println(path2 + " checking...");
+	 * 
+	 * if (!file.exists()) { file.mkdir();
+	 * System.out.println("Directory is created"); }
+	 * 
+	 * dmFolder.setSystemPath(path); dmFolder.setCreatedDate(new Date());
+	 * System.out.println(dmFolder);
+	 * 
+	 * return folderRepo.save(dmFolder); }
+	 */
 
 	@Override
 	public void downloadFolder(HttpServletResponse response, long id) {
@@ -174,8 +167,7 @@ public class DMFolderServiceImpl implements DMFolderService {
 	    System.out.println(zos);
 
 	    System.out.println("Files in " + folder.getAbsolutePath() + ":");
-	    
-	    // Create an entry for the empty folder
+	   
 	    String folderEntryPath = parentFolderPath + "/";
 	    ZipEntry folderEntry = new ZipEntry(folderEntryPath);
 	    zos.putNextEntry(folderEntry);

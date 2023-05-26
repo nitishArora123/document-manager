@@ -23,7 +23,7 @@ public interface DMFolderService {
 	
 	public List<DMFolder> getByParentId(long parentId);
 	
-	public DMFolder createParentFolder(DMFolder dmFolder,String path);
+	//public DMFolder createParentFolder(DMFolder dmFolder,String path);
 	
 	public void downloadFolder(HttpServletResponse response,long id);
 

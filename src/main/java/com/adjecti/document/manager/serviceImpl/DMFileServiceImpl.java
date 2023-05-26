@@ -114,6 +114,7 @@ public class DMFileServiceImpl implements DMFileService {
 			DMFileType docType = new DMFileType();
 			documentManager.setName(newFileName);
 			documentManager.setCreatedDate(new Date());
+			documentManager.setSystemPath(fullPath);
 			docType.setDmFileType(docType.getDmFileType());
 			documentManager.setDescription(documentManager.getDescription());
 			file.transferTo(new File(fullPath));
