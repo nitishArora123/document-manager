@@ -13,11 +13,15 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.data.util.StreamUtils;
 import org.springframework.stereotype.Service;
 
 import com.adjecti.document.manager.model.DMFolder;
 import com.adjecti.document.manager.repository.DMFolderRepository;
 import com.adjecti.document.manager.service.DMFolderService;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class DMFolderServiceImpl implements DMFolderService {
@@ -133,62 +137,74 @@ public class DMFolderServiceImpl implements DMFolderService {
 	}
 
 	@Override
-	public byte[] downloadFolder(long id) {
-		DMFolder folder = folderRepo.findById(id).orElse(null);
-		if (folder == null) {
-			return null; 
+	public void downloadFolder(HttpServletResponse response, long id) {
+		    DMFolder folder = folderRepo.findById(id).get();
+		    if (folder == null) {
+		       System.out.println("empty folder");
+		        return;
+		    }
+
+		    String folderPath = folder.getSystemPath();
+		    File folderFile = new File(folderPath);
+		    if (!folderFile.exists() || !folderFile.isDirectory()) {
+		    	System.out.println("not exists");
+		    }else {
+		    	System.out.println("Exists and its a directory");
+		    }
+
+		    try {
+		        response.setContentType("application/zip");
+		        response.setHeader("Content-Disposition", "attachment; filename=" + folder.getName() + ".zip");
+
+		        try (ZipOutputStream zos = new ZipOutputStream(response.getOutputStream())) {
+		        	System.out.println("in zosssssss");
+		        	System.out.println(folderFile.getName() + "folder file name");
+		        	System.out.println(folderFile + "folder file");
+		            addFilesToZip(folderFile, folderFile.getName(), zos);
+		            System.out.println("after adding");
+		        }
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    }
 		}
 
-		String folderPath = folder.getSystemPath();
-		System.out.println(folderPath);
-		File folderFile = new File(folderPath);
-		System.out.println(folderFile);
-		if (!folderFile.exists() || !folderFile.isDirectory()) {
-			return null;
-		}
+	public void addFilesToZip(File folder, String parentFolderPath, ZipOutputStream zos) throws IOException {
+	    System.out.println(folder + "fulll");
+	    System.out.println(parentFolderPath);
+	    System.out.println(zos);
 
-		try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				ZipOutputStream zos = new ZipOutputStream(baos)) {
-//System.out.println(zos + "zzzzz");
-//System.out.println(baos + "baos");
-			addFilesToZip(folderFile, folderFile.getName(), zos);
+	    System.out.println("Files in " + folder.getAbsolutePath() + ":");
+	    
+	    // Create an entry for the empty folder
+	    String folderEntryPath = parentFolderPath + "/";
+	    ZipEntry folderEntry = new ZipEntry(folderEntryPath);
+	    zos.putNextEntry(folderEntry);
+	    zos.closeEntry();
 
-			zos.finish();
-			zos.close();
-
-			return baos.toByteArray();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null; 
-		}
-	}
-	
-	private void addFilesToZip(File folder, String parentFolderPath, ZipOutputStream zos) throws IOException {
 	    File[] files = folder.listFiles();
-	    System.out.println(files + "listsssss");
-	    if (files != null) {
+	    if (files != null && files.length > 0) {
 	        for (File file : files) {
+	            System.out.println(file + "is it a file?");
+	            System.out.println(file.getName() + " |||||||||| " + file.getAbsolutePath());
+
 	            if (file.isDirectory()) {
-	                String entryPath = parentFolderPath + "/" + file.getName();
-	                System.out.println(entryPath + "entry path");
+	                String entryPath = parentFolderPath + "/" + file.getName() + "/";
+	                System.out.println(entryPath + " directory zip");
 	                ZipEntry entry = new ZipEntry(entryPath);
-	                System.out.println( entry + "entry");
 	                zos.putNextEntry(entry);
+	                addFilesToZip(file, entryPath, zos);
 	                zos.closeEntry();
-	                addFilesToZip(file, entryPath, zos); 
 	            } else {
 	                Path filePath = file.toPath();
-	                System.out.println(filePath + "fppppp");
 	                String entryPath = parentFolderPath + "/" + file.getName();
-	                System.out.println(entryPath);
+	                System.out.println(entryPath + " not dir zip");
 	                ZipEntry entry = new ZipEntry(entryPath);
 	                zos.putNextEntry(entry);
-	                zos.write(Files.readAllBytes(filePath));
+	                Files.copy(filePath, zos);
 	                zos.closeEntry();
 	            }
 	        }
 	    }
 	}
-
 }
 

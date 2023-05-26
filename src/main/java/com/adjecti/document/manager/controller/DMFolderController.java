@@ -83,29 +83,9 @@ public class DMFolderController {
 		return folderService.getByParentId(parentId);
 	}
 	
-	@GetMapping("/download/{id}")
-	public ResponseEntity<byte[]> downloadFolder(@PathVariable("id") long id) {
-	    
-		System.out.println(path);
-		DMFolder folder = folderService.getById(id);
-	    if (folder == null) {
-	        return ResponseEntity.notFound().build();
+	 @GetMapping("/download/{id}")
+	    public void downloadFolder(HttpServletResponse response, @PathVariable("id") long id) {
+	        folderService.downloadFolder(response, id);
 	    }
 
-	    byte[] folderData = folderService.downloadFolder(id);
-	    if (folderData == null) {
-	        return ResponseEntity.notFound().build();
-	    }else {
-
-	    String folderName = folder.getName();
-	    System.out.println(folder);
-	    String fileName = folderName + ".zip";
-
-	    HttpHeaders headers = new HttpHeaders();
-	    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-	    headers.setContentDispositionFormData("attachment", fileName);
-	    
-	    return ResponseEntity.ok().headers(headers).body(folderData);
-	    }
-	}
 }

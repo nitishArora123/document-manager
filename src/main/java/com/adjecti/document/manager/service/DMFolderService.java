@@ -7,6 +7,8 @@ import org.springframework.data.repository.query.Param;
 
 import com.adjecti.document.manager.model.DMFolder;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 public interface DMFolderService {
 
 	public DMFolder create(DMFolder folder,String path);
@@ -23,7 +25,7 @@ public interface DMFolderService {
 	
 	public DMFolder createParentFolder(DMFolder dmFolder,String path);
 	
-	public byte[] downloadFolder(long id);
+	public void downloadFolder(HttpServletResponse response,long id);
 
 
 }
