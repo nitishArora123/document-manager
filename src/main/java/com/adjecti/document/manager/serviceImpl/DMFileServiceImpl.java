@@ -1,10 +1,15 @@
 package com.adjecti.document.manager.serviceImpl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +26,8 @@ import com.adjecti.document.manager.repository.DMFileRepository;
 import com.adjecti.document.manager.repository.DMFileTypeRepository;
 import com.adjecti.document.manager.service.DMFileService;
 import com.adjecti.document.manager.util.ReflectionBeanUtil;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class DMFileServiceImpl implements DMFileService {
@@ -124,29 +131,33 @@ public class DMFileServiceImpl implements DMFileService {
 	}
 
 	@Override
-	public Optional<DMFile> getById(long id) {
+	public DMFile getById(long id) {
 		// TODO Auto-generated method stub
-		return docRepo.findById(id);
+		return docRepo.findById(id).get();
 	}
 
 	@Override
 	public DMFile create(Map<Object, Object> documentManager) throws ClassNotFoundException {
-		// DMFileType docType = new DMFileType();
+	    String docIds = documentManager.get("docId").toString();
+	    String[] afterSplit = docIds.split(",");
 
-		long docId = Long.parseLong(documentManager.get("docId").toString());
+	    for (String id : afterSplit) {
+	        long docId = Long.parseLong(id.trim());
+	        System.out.println(docId);
 
-		System.out.println("docId=--->" + docId);
-		String name = documentManager.get("name").toString();
-		String description = documentManager.get("description").toString();
-		String documentType = documentManager.get("dmFileType").toString();
-		DMFileType dmfile = docTypeRepo.findById(Long.parseLong(documentType)).get();
-		// DMFile docManager1 = update(docManager, docId);
-		DMFile docManager = docRepo.findById(docId).get();
+	        String name = documentManager.get("name").toString();
+	        String description = documentManager.get("description").toString();
+	        String documentType = documentManager.get("dmFileType").toString();
 
-		docManager.setName(name);
-		docManager.setDescription(description);
-		docManager.setDmFileType(dmfile);
-		return update(docManager, docId);
+	        DMFileType dmfile = docTypeRepo.findById(Long.parseLong(documentType)).get();
+	        DMFile docManager = docRepo.findById(docId).get();
+	       // docManager.setd
+	        docManager.setName(name);
+	        docManager.setDescription(description);
+	        docManager.setDmFileType(dmfile);
+	        update(docManager, docId);
+	    }
+	        return (DMFile) documentManager;
 
 	}
 
@@ -187,4 +198,21 @@ public class DMFileServiceImpl implements DMFileService {
 		return Files.readAllBytes(new File(fullPath).toPath());
 	}
 
-}
+		@Override
+		public byte[] downloadFile(long id) throws IOException {
+			  DMFile file = getById(id);
+			  System.out.println(file + "ddd");
+		        if (file==null) {
+		            throw new FileNotFoundException("File not found for id: " + id);
+		        }
+		        String filePath = file.getSystemPath();
+		        System.out.println(filePath + "file path");
+		        Path path = Paths.get(filePath);
+		        System.out.println(path);
+		        return Files.readAllBytes(path);
+		    }
+	    
+		
+	}
+
+

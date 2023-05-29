@@ -1,6 +1,10 @@
 package com.adjecti.document.manager.controller;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -8,6 +12,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -55,16 +60,8 @@ public class DMFileController {
 	@PostMapping
 	public ResponseEntity<DMFile> create(@RequestBody Map<Object, Object> documentManager)
 			throws ClassNotFoundException {
-
-//		DocumentManager docM=new DocumentManager();
-
-//		ObjectMapper objMap=new ObjectMapper();
-//		
-//		DocumentManager docM=objMap.convertValue(documentManager,DocumentManager.class);
-
 		System.out.println(documentManager);
 		return new ResponseEntity<DMFile>(fileService.create(documentManager), HttpStatus.OK);
-//		return null;		
 	}
 
 	@PostMapping("/uploadInFolder")
@@ -79,14 +76,17 @@ public class DMFileController {
 		}
 	}
 
-	@GetMapping("/download/{documentName}")
-	public ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String documentName) throws IOException {
-		byte[] fileBytes = fileService.downloadDocument(documentName);
-		System.out.println("file download --->"+fileBytes);
-		ByteArrayResource resource = new ByteArrayResource(fileBytes);
-		return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + documentName)
-				.contentType(MediaType.APPLICATION_OCTET_STREAM).body(resource);
-	}
+	/*
+	 * @GetMapping("/download/{documentName}") public
+	 * ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String
+	 * documentName) throws IOException { byte[] fileBytes =
+	 * fileService.downloadDocument(documentName);
+	 * System.out.println("file download --->"+fileBytes); ByteArrayResource
+	 * resource = new ByteArrayResource(fileBytes); return
+	 * ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
+	 * "attachment;filename=" + documentName)
+	 * .contentType(MediaType.APPLICATION_OCTET_STREAM).body(resource); }
+	 */
 
 	@GetMapping
 	public List<DMFile> getAll() {
@@ -94,7 +94,7 @@ public class DMFileController {
 	}
 
 	@GetMapping("{id}")
-	public Optional<DMFile> getById(@PathVariable("id") long id) {
+	public DMFile getById(@PathVariable("id") long id) {
 		return fileService.getById(id);
 	}
 
@@ -107,4 +107,12 @@ public class DMFileController {
 	public DMFile update(@PathVariable("id") long id, @RequestBody DMFile docManager) {
 		return fileService.update(docManager, id);
 	}
+	
+
+	@GetMapping("/download/{id}")
+	public ResponseEntity<byte[]> downloadFile(@PathVariable("id") long id) throws IOException {
+	    byte[] fileContent = fileService.downloadFile(id);
+	    return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(fileContent);
+	}
 }
+
