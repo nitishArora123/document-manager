@@ -1,19 +1,12 @@
 package com.adjecti.document.manager.service;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
-import javax.swing.plaf.multi.MultiButtonUI;
-
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.adjecti.document.manager.model.DMFile;
-
-import jakarta.servlet.http.HttpServletResponse;
-
 
 public interface DMFileService {
 
@@ -32,9 +25,9 @@ public interface DMFileService {
 	DMFile create(Map<Object, Object> docManager) throws ClassNotFoundException;
 
 	public List<DMFile> uploadFilesInFolder(String folderPath, List<MultipartFile> files) throws IOException;
-	 
-	public byte[] downloadDocument(String fileName) throws IOException;
 	
-	public byte[] downloadFile(long id)throws IOException;
-	
+	public ResponseEntity<byte[]> downloadFile(long id) throws IOException;
+
+	public ResponseEntity<Resource> previewFile(long id);
+
 }

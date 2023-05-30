@@ -1,33 +1,31 @@
 package com.adjecti.document.manager.serviceImpl;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Clock;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.adjecti.document.manager.model.DMFile;
 import com.adjecti.document.manager.model.DMFileType;
-import com.adjecti.document.manager.model.DMFolder;
 import com.adjecti.document.manager.repository.DMFileRepository;
 import com.adjecti.document.manager.repository.DMFileTypeRepository;
 import com.adjecti.document.manager.service.DMFileService;
-import com.adjecti.document.manager.util.ReflectionBeanUtil;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class DMFileServiceImpl implements DMFileService {
@@ -38,15 +36,10 @@ public class DMFileServiceImpl implements DMFileService {
 	@Autowired
 	private DMFileTypeRepository docTypeRepo;
 
-	/* private static final String UPLOAD_PATH = ""; */
-
 	@Override
 	public DMFile upload(String path, MultipartFile file) throws IOException {
 		try {
 			String fileName = file.getOriginalFilename();
-			/*
-			 * DMFolder dmf = new DMFolder() dmf.getDmFile().get(0).get
-			 */
 			System.out.println(fileName + "full file name");
 			String fullPath = path + "/" + fileName;
 			System.out.println(fullPath + "pathhhh");
@@ -82,20 +75,20 @@ public class DMFileServiceImpl implements DMFileService {
 
 	@Override
 	public DMFile update(DMFile document, long id) {
-	    Optional<DMFile> existingDocumentOptional = docRepo.findById(id);
-	    if (!existingDocumentOptional.isPresent()) {
-	        throw new RuntimeException("Document not found");
-	    }
-	    DMFile existingDocument = existingDocumentOptional.get();
-	    System.out.println(existingDocument);
-	    String originalFileName = existingDocument.getSystemPath();
-	    String fileName = originalFileName.substring(originalFileName.lastIndexOf('/') + 1);
-	    existingDocument.setName(fileName);
-	    
-	    existingDocument.setDescription(document.getDescription());
-	    existingDocument.setCreatedDate(new Date());
-	    
-	    return docRepo.save(existingDocument);
+		Optional<DMFile> existingDocumentOptional = docRepo.findById(id);
+		if (!existingDocumentOptional.isPresent()) {
+			throw new RuntimeException("Document not found");
+		}
+		DMFile existingDocument = existingDocumentOptional.get();
+		System.out.println(existingDocument);
+		String originalFileName = existingDocument.getSystemPath();
+		String fileName = originalFileName.substring(originalFileName.lastIndexOf('/') + 1);
+		existingDocument.setName(fileName);
+
+		existingDocument.setDescription(document.getDescription());
+		existingDocument.setCreatedDate(new Date());
+
+		return docRepo.save(existingDocument);
 	}
 
 	@Override
@@ -138,27 +131,28 @@ public class DMFileServiceImpl implements DMFileService {
 
 	@Override
 	public DMFile create(Map<Object, Object> documentManager) throws ClassNotFoundException {
-	    String docIds = documentManager.get("docId").toString();
-	    String[] afterSplit = docIds.split(",");
+		String docIds = documentManager.get("docId").toString();
+		String[] afterSplit = docIds.split(",");
+		System.out.println(afterSplit);
+		for (String id : afterSplit) {
+			long docId = Long.parseLong(id.trim());
+			System.out.println(docId);
 
-	    for (String id : afterSplit) {
-	        long docId = Long.parseLong(id.trim());
-	        System.out.println(docId);
+			String name = documentManager.get("name").toString();
+			String description = documentManager.get("description").toString();
+			String documentType = documentManager.get("dmFileType").toString();
 
-	        String name = documentManager.get("name").toString();
-	        String description = documentManager.get("description").toString();
-	        String documentType = documentManager.get("dmFileType").toString();
+			DMFileType dmfile = docTypeRepo.findById(Long.parseLong(documentType)).get();
+			DMFile docManager = docRepo.findById(docId).get();
 
-	        DMFileType dmfile = docTypeRepo.findById(Long.parseLong(documentType)).get();
-	        DMFile docManager = docRepo.findById(docId).get();
-	       // docManager.setd
-	        docManager.setName(name);
-	        docManager.setDescription(description);
-	        docManager.setDmFileType(dmfile);
-	        update(docManager, docId);
-	    }
-	        return (DMFile) documentManager;
-
+			docManager.setName(name);
+			docManager.setDescription(description);
+			docManager.setDmFileType(dmfile);
+			update(docManager, docId);
+		}
+		DMFile lastCreatedDocManager = docRepo.findById(Long.parseLong(afterSplit[afterSplit.length - 1].trim())).get();
+		System.out.println(lastCreatedDocManager);
+		return lastCreatedDocManager;
 	}
 
 	@Override
@@ -191,28 +185,27 @@ public class DMFileServiceImpl implements DMFileService {
 	}
 
 	@Override
-	public byte[] downloadDocument(String fileName) throws IOException {
-		Optional<DMFile> fileObject = docRepo.findByName(fileName);
-		String fullPath = fileObject.get().getSystemPath();
-		System.out.println(fullPath + "fpath");
-		return Files.readAllBytes(new File(fullPath).toPath());
+	public ResponseEntity<byte[]> downloadFile(long id) {
+		try {
+			DMFile file = getById(id);
+			String fileName = file.getName();
+			Path filePath = Paths.get(file.getSystemPath());
+
+			byte[] fileContent = Files.readAllBytes(filePath);
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + fileName);
+
+			return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_OCTET_STREAM)
+					.body(fileContent);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
-
-		@Override
-		public byte[] downloadFile(long id) throws IOException {
-			  DMFile file = getById(id);
-			  System.out.println(file + "ddd");
-		        if (file==null) {
-		            throw new FileNotFoundException("File not found for id: " + id);
-		        }
-		        String filePath = file.getSystemPath();
-		        System.out.println(filePath + "file path");
-		        Path path = Paths.get(filePath);
-		        System.out.println(path);
-		        return Files.readAllBytes(path);
-		    }
-	    
-		
-	}
-
-
+	
+	@Override
+	 public ResponseEntity<Resource> previewFile(@PathVariable long id) {
+		return null;
+	 }
+}

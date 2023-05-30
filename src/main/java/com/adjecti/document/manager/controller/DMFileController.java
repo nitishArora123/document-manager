@@ -1,22 +1,11 @@
 package com.adjecti.document.manager.controller;
-
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.adjecti.document.manager.model.DMFile;
 import com.adjecti.document.manager.service.DMFileService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @CrossOrigin("*")
 @RequestMapping("/api/v1/documentManager")
@@ -76,18 +64,6 @@ public class DMFileController {
 		}
 	}
 
-	/*
-	 * @GetMapping("/download/{documentName}") public
-	 * ResponseEntity<ByteArrayResource> downloadDocument(@PathVariable String
-	 * documentName) throws IOException { byte[] fileBytes =
-	 * fileService.downloadDocument(documentName);
-	 * System.out.println("file download --->"+fileBytes); ByteArrayResource
-	 * resource = new ByteArrayResource(fileBytes); return
-	 * ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
-	 * "attachment;filename=" + documentName)
-	 * .contentType(MediaType.APPLICATION_OCTET_STREAM).body(resource); }
-	 */
-
 	@GetMapping
 	public List<DMFile> getAll() {
 		return fileService.getAll();
@@ -108,11 +84,15 @@ public class DMFileController {
 		return fileService.update(docManager, id);
 	}
 	
-
 	@GetMapping("/download/{id}")
-	public ResponseEntity<byte[]> downloadFile(@PathVariable("id") long id) throws IOException {
-	    byte[] fileContent = fileService.downloadFile(id);
-	    return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).body(fileContent);
+	public ResponseEntity<byte[]> downloadFile(@PathVariable ("id") long id)throws IOException{
+		return fileService.downloadFile(id);
 	}
-}
+	
+	@GetMapping("/preview/{id}")
+	public ResponseEntity<Resource> previewFile(@PathVariable 	("id") long id)throws IOException{
+	return fileService.previewFile(id);
+	}
+	
 
+}
