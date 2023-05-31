@@ -1,6 +1,9 @@
 package com.adjecti.document.manager.serviceImpl;
+
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,17 +13,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
+
 import com.adjecti.document.manager.model.DMFile;
 import com.adjecti.document.manager.model.DMFileType;
 import com.adjecti.document.manager.repository.DMFileRepository;
@@ -203,9 +207,37 @@ public class DMFileServiceImpl implements DMFileService {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
-	
+
+	// docx and xlns file pending 
 	@Override
-	 public ResponseEntity<Resource> previewFile(@PathVariable long id) {
-		return null;
-	 }
-}
+	public ResponseEntity<byte[]> previewFile(long id) {
+		DMFile dmFile = docRepo.findById(id).get();
+		try {
+			// Construct the file path
+			String systemPath = dmFile.getSystemPath();
+			// Read the image file
+			Path imagePath = Paths.get(systemPath);
+			byte[] imageBytes = Files.readAllBytes(imagePath);
+			// Determine the content type based on the file extension
+			String contentType = getMineType(systemPath);
+			// Return the image as a response with appropriate content type
+			return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).body(imageBytes);
+		} catch (IOException e) {
+			// Handle any exceptions that may occur while reading the image file
+			return ResponseEntity.status(500).build();
+		}
+	}
+	
+	private static String getMineType(String filePath) {
+	 Path path =Paths.get(filePath);
+	 try {
+		 // Use Files.probeContentType() to get the MIME type
+		 return Files.probeContentType(path);	 
+     } catch (IOException e) {
+         e.printStackTrace();
+     }
+     return null;
+ }	
+		
+	}
+

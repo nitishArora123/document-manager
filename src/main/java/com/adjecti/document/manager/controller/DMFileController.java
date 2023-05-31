@@ -90,7 +90,7 @@ public class DMFileController {
 	}
 	
 	@GetMapping("/preview/{id}")
-	public ResponseEntity<Resource> previewFile(@PathVariable 	("id") long id)throws IOException{
+	public ResponseEntity<byte[]> previewFile(@PathVariable 	("id") long id)throws IOException{
 	return fileService.previewFile(id);
 	}
 	

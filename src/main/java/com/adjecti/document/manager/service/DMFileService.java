@@ -16,7 +16,7 @@ public interface DMFileService {
 	
 	public void delete(long id);
 	
-	public DMFile update(DMFile document ,  long id);
+	public DMFile update(DMFile document,long id);
 	
 	public List<DMFile> uploadMultiple(String path , MultipartFile[] file) throws IllegalStateException, IOException;	
 
@@ -28,6 +28,6 @@ public interface DMFileService {
 	
 	public ResponseEntity<byte[]> downloadFile(long id) throws IOException;
 
-	public ResponseEntity<Resource> previewFile(long id);
-
+	public ResponseEntity<byte[]> previewFile(long id);
+	
 }
